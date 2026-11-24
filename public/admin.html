@@ -1,60 +1,404 @@
+
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>cult.fit | Admin</title>
+
 <style>
-*{box-sizing:border-box}body{margin:0;background:#101010;color:#fff;font:15px Arial,sans-serif}
-.wrap{width:min(1050px,calc(100% - 32px));margin:55px auto}.brand{font-size:30px;font-weight:900;margin-bottom:8px}.brand span{color:#ff4d24}
-.muted{color:#aaa}.panel{background:#1c1c1c;border:1px solid #333;padding:25px;margin-top:25px}
-input,button{font:inherit;padding:13px;border:0}input{width:100%;max-width:360px;background:#fff;color:#111}
-button{background:#ff4d24;color:#fff;font-weight:700;cursor:pointer;margin:5px 0}
-.hidden{display:none}.row{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
-.item{padding:18px 0;border-bottom:1px solid #383838}.item h3{margin:0 0 8px}.item p{color:#ccc;line-height:1.6;margin:6px 0}
-.small{font-size:12px;color:#999}.danger{background:#555}.error{color:#ff795c}.success{color:#8be0a0}
-a{color:#ff795c}
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #101010;
+  color: #fff;
+  font: 15px Arial, sans-serif;
+}
+
+.wrap {
+  width: min(1050px, calc(100% - 32px));
+  margin: 55px auto;
+}
+
+.brand {
+  font-size: 30px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.brand span {
+  color: #ff4d24;
+}
+
+.muted {
+  color: #aaa;
+}
+
+.panel {
+  background: #1c1c1c;
+  border: 1px solid #333;
+  padding: 25px;
+  margin-top: 25px;
+}
+
+input, button {
+  font: inherit;
+  padding: 13px;
+  border: 0;
+}
+
+input {
+  width: 100%;
+  max-width: 360px;
+  background: #fff;
+  color: #111;
+}
+
+button {
+  background: #ff4d24;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 5px 0;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hidden {
+  display: none;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.item {
+  padding: 18px 0;
+  border-bottom: 1px solid #383838;
+}
+
+.item h3 {
+  margin: 0 0 8px;
+}
+
+.item p {
+  color: #ccc;
+  line-height: 1.6;
+  margin: 6px 0;
+}
+
+.small {
+  font-size: 12px;
+  color: #999;
+}
+
+.danger {
+  background: #555;
+}
+
+.error {
+  color: #ff795c;
+}
+
+.success {
+  color: #8be0a0;
+}
+
+a {
+  color: #ff795c;
+}
 </style>
 </head>
-<body><main class="wrap">
+
+<body>
+
+<main class="wrap">
+
   <div class="brand">cult.fit<span>.</span> / ADMIN</div>
   <p class="muted">Manage website enquiries</p>
+
+  <!-- LOGIN -->
   <section class="panel" id="loginPanel">
+
     <h2>Admin login</h2>
-    <form id="loginForm"><input id="password" type="password" placeholder="Admin password" required>
-    <button type="submit">Login</button></form><p id="loginMsg" class="error"></p>
+
+    <form id="loginForm">
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Admin password"
+        autocomplete="current-password"
+        required
+      >
+
+      <button type="submit">Login</button>
+
+    </form>
+
+    <p id="loginMsg" class="error"></p>
+
   </section>
+
+  <!-- DASHBOARD -->
   <section class="panel hidden" id="dashboard">
-    <div class="row"><h2>Enquiries</h2><div><button id="refresh">Refresh</button> <button class="danger" id="logout">Logout</button></div></div>
-    <p id="count" class="muted"></p><div id="list"></div>
+
+    <div class="row">
+
+      <h2>Enquiries</h2>
+
+      <div>
+        <button id="refresh">Refresh</button>
+        <button class="danger" id="logout">Logout</button>
+      </div>
+
+    </div>
+
+    <p id="count" class="muted"></p>
+
+    <div id="list"></div>
+
   </section>
+
 </main>
+
 <script>
-const loginPanel=document.getElementById('loginPanel'),dashboard=document.getElementById('dashboard');
-async function load(){
-  const r=await fetch('/api/admin/enquiries');
-  if(r.status===401){loginPanel.classList.remove('hidden');dashboard.classList.add('hidden');return}
-  const items=await r.json();loginPanel.classList.add('hidden');dashboard.classList.remove('hidden');
-  document.getElementById('count').textContent=`${items.length} enquiry/enquiries saved`;
-  const list=document.getElementById('list');list.replaceChildren();
-  if(!items.length){list.textContent='No enquiries yet.';return}
-  items.forEach(item=>{
-    const card=document.createElement('article');card.className='item';
-    const title=document.createElement('h3');title.textContent=item.name;
-    const date=document.createElement('div');date.className='small';date.textContent=new Date(item.createdAt).toLocaleString();
-    const details=document.createElement('p');details.textContent=`Phone: ${item.phone} | Email: ${item.email || '-'} | Interest: ${item.interest || '-'}`;
-    const message=document.createElement('p');message.textContent=item.message;
-    const actions=document.createElement('div');
-    const wa=document.createElement('a');wa.href=`https://wa.me/${item.phone.replace(/\D/g,'')}`;wa.target='_blank';wa.rel='noopener';wa.textContent='WhatsApp customer';
-    const del=document.createElement('button');del.className='danger';del.textContent='Delete';
-    del.addEventListener('click',async()=>{if(confirm('Delete this enquiry?')){await fetch('/api/admin/enquiries/'+item.id,{method:'DELETE'});load()}});
-    actions.append(wa,document.createTextNode('  '),del);card.append(title,date,details,message,actions);list.append(card);
-  });
+
+const loginPanel = document.getElementById("loginPanel");
+const dashboard = document.getElementById("dashboard");
+const loginForm = document.getElementById("loginForm");
+const loginMsg = document.getElementById("loginMsg");
+
+
+// LOAD ENQUIRIES
+async function load() {
+
+  try {
+
+    const response = await fetch("/api/admin/enquiries", {
+      credentials: "same-origin"
+    });
+
+    if (response.status === 401) {
+      loginPanel.classList.remove("hidden");
+      dashboard.classList.add("hidden");
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error("Unable to load enquiries");
+    }
+
+    const items = await response.json();
+
+    loginPanel.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+
+    document.getElementById("count").textContent =
+      `${items.length} enquiry/enquiries saved`;
+
+    const list = document.getElementById("list");
+
+    list.replaceChildren();
+
+    if (items.length === 0) {
+      list.textContent = "No enquiries yet.";
+      return;
+    }
+
+    items.forEach(item => {
+
+      const card = document.createElement("article");
+      card.className = "item";
+
+      const title = document.createElement("h3");
+      title.textContent = item.name;
+
+      const date = document.createElement("div");
+      date.className = "small";
+      date.textContent = new Date(item.createdAt).toLocaleString();
+
+      const details = document.createElement("p");
+
+      details.textContent =
+        `Phone: ${item.phone} | Email: ${item.email || "-"} | Interest: ${item.interest || "-"}`;
+
+      const message = document.createElement("p");
+      message.textContent = item.message;
+
+      const actions = document.createElement("div");
+
+      const wa = document.createElement("a");
+
+      wa.href = `https://wa.me/${item.phone.replace(/\D/g, "")}`;
+      wa.target = "_blank";
+      wa.rel = "noopener";
+      wa.textContent = "WhatsApp customer";
+
+      const del = document.createElement("button");
+
+      del.className = "danger";
+      del.textContent = "Delete";
+
+      del.addEventListener("click", async () => {
+
+        if (!confirm("Delete this enquiry?")) return;
+
+        try {
+
+          const result = await fetch(
+            "/api/admin/enquiries/" + encodeURIComponent(item.id),
+            {
+              method: "DELETE",
+              credentials: "same-origin"
+            }
+          );
+
+          if (!result.ok) {
+            alert("Unable to delete enquiry.");
+            return;
+          }
+
+          await load();
+
+        } catch (error) {
+          alert("Server connection error.");
+        }
+
+      });
+
+      actions.append(
+        wa,
+        document.createTextNode("  "),
+        del
+      );
+
+      card.append(
+        title,
+        date,
+        details,
+        message,
+        actions
+      );
+
+      list.append(card);
+
+    });
+
+  } catch (error) {
+
+    console.error("Dashboard error:", error);
+    loginMsg.textContent = "Unable to connect to server.";
+
+  }
+
 }
-document.getElementById('loginForm').addEventListener('submit',async e=>{
-  e.preventDefault();const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:document.getElementById('password').value})});
-  const result=await r.json();document.getElementById('loginMsg').textContent=result.error||'';if(r.ok)load();
+
+
+// ADMIN LOGIN
+loginForm.addEventListener("submit", async (event) => {
+
+  event.preventDefault();
+
+  const button = loginForm.querySelector("button");
+
+  button.disabled = true;
+  loginMsg.className = "error";
+  loginMsg.textContent = "Logging in...";
+
+  try {
+
+    const response = await fetch("/api/admin/login", {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      credentials: "same-origin",
+
+      body: JSON.stringify({
+        password: document.getElementById("password").value
+      })
+
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+
+      loginMsg.textContent =
+        result.error || "Login failed. Please try again.";
+
+      return;
+
+    }
+
+    loginMsg.className = "success";
+    loginMsg.textContent = "Login successful! Loading dashboard...";
+
+    await load();
+
+  } catch (error) {
+
+    console.error("Login error:", error);
+
+    loginMsg.textContent =
+      "Server connection error. Please try again.";
+
+  } finally {
+
+    button.disabled = false;
+
+  }
+
 });
-document.getElementById('refresh').addEventListener('click',load);
-document.getElementById('logout').addEventListener('click',async()=>{await fetch('/api/admin/logout',{method:'POST'});load()});
+
+
+// REFRESH
+document.getElementById("refresh").addEventListener("click", load);
+
+
+// LOGOUT
+document.getElementById("logout").addEventListener("click", async () => {
+
+  try {
+
+    await fetch("/api/admin/logout", {
+      method: "POST",
+      credentials: "same-origin"
+    });
+
+    dashboard.classList.add("hidden");
+    loginPanel.classList.remove("hidden");
+
+    document.getElementById("password").value = "";
+    loginMsg.textContent = "";
+
+  } catch (error) {
+
+    alert("Logout failed.");
+
+  }
+
+});
+
+
+// INITIAL CHECK
 load();
-</script></body></html>
+
+</script>
+
+</body>
+</html>
